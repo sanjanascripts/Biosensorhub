@@ -1,0 +1,67 @@
+#include "LiquidCrystal.h"
+LiquidCrystal lcd(8, 7, 6, 5, 4, 3);
+
+int baselineTemp = 0;
+int celsius = 0;
+int sensorPin = A0;
+
+void setup()
+{
+  pinMode(sensorPin, INPUT);
+  Serial.begin(9600);
+
+  pinMode(12, OUTPUT);
+  pinMode(11, OUTPUT);
+  digitalWrite(12, LOW);
+  digitalWrite(11, LOW);
+
+  lcd.begin(16, 2);
+}
+
+void loop()
+{
+  int reading = analogRead(sensorPin);
+  float voltage = reading * 4.68 / 1024.0;
+  float temperatureC = (voltage - 0.5) * 100;
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Temperature Value ");
+  lcd.setCursor(0, 1);
+  lcd.print(" degrees C");
+  lcd.setCursor(11, 1);
+  lcd.print(temperatureC);
+
+  Serial.print(temperatureC);
+  Serial.println(" degrees C");
+
+  baselineTemp = 20;
+
+  celsius = map(((reading - 20) * 3.04), 0, 1023, -40, 125);
+
+  Serial.print(celsius);
+  Serial.println(" C, ");
+
+  if (celsius < baselineTemp)
+  {
+    digitalWrite(12, LOW);
+    digitalWrite(11, LOW);
+  }
+  if (celsius >= baselineTemp && celsius < baselineTemp + 20)
+  {
+    digitalWrite(12, HIGH);
+    digitalWrite(11, LOW);
+  }
+  if (celsius >= baselineTemp + 20 && celsius < baselineTemp + 40)
+  {
+    digitalWrite(12, LOW);
+    digitalWrite(11, HIGH);
+  }
+  if (celsius >= baselineTemp + 40)
+  {
+    digitalWrite(12, HIGH);
+    digitalWrite(11, HIGH);
+  }
+
+  delay(1000);
+}
